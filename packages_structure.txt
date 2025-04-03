@@ -1,0 +1,26 @@
+└── DiffusionWithConsumption
+    ├── base
+    │   ├── __init__.py
+    │   ├── base_fluxmap.py
+    │   ├── base_plotter.py
+    │   └── diffusion_plotter.py
+    │
+    ├── oneD
+    │   ├── __init__.py
+    │   ├── fluxmap1D.py
+    │   ├── solver1D.py
+    │   └── solver1D_analyt.py
+    │
+    ├── threeD
+    │   ├── __init__.py
+    │   ├── fluxmap3D.py
+    │   └── solver3D.py
+    │
+    ├── 1D_01.ipynb
+    ├── 1D_02.ipynb
+    ├── ...
+    ├── 3D_01.ipynb
+    ├── 3D_02.ipynb
+    ├── ...
+    ├── main1D.py
+    └── main3D.py

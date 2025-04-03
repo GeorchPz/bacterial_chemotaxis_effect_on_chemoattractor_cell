@@ -1,0 +1,57 @@
+% \subsection{Theoretical Framework: A Continuum Model}
+\subsection{From Discreet to Continuum}
+
+\subsubsection*{Chemotaxis at an Individual Level}
+
+\begin{itemize}
+    \item Discreet and stochastic model.
+    \item Individual trajectory, \( x_j(t) \).
+\end{itemize}\subsubsection*{Chemotaxis at a Population Level}
+
+\begin{itemize}
+    \item Transition from individual to population-level, discrete to continuum approaches.
+    \item Continuum and deterministic model, diffusion equation with consumption.
+    \item Concentration, \( c(t) \).
+\end{itemize}
+
+\subsection{Non-Dimensionalisation}
+
+We start from the physical equation, where we have capitalised its magnitudes:
+\begin{equation}
+    \frac{\partial N(\vec{R}, T)}{\partial T} =
+    D \, \nabla^2_{\vec{R}} \, N(\vec{R}, T)
+    - \mathrm{A} \, N(\vec{R}, T) \,C(\vec{R}, T)
+\label{eq:Diff_physical}
+\end{equation}
+
+These quantities represent the real, laboratory measures:
+\(\vec{R}\) is the position vector relative to the diatom,
+\(T\) is time,
+\(D\) is the diffusion coefficient,
+\(N\) \& \(C\) are the nutrient and bacterial concentration respectively, and
+\(\mathrm{A}\) is the bacterial consumption rate.
+Now, we introduce the following variables changes, to obtain a dimensionless equation:
+
+\begin{equation}
+\left\{
+    \vec{R} = L \, \vec{r}, \
+    T = \frac{L^2}{D} \, t, \quad
+    N = \frac{n}{L^3}, \quad
+    C = \frac{c}{L^3}, \quad
+    \mathrm{A} = DL \, \alpha
+\right\}
+\label{eq:change_of_vars}
+\end{equation}
+
+Where the set of lowercase variables (like \(n\) or \(\alpha\)) are the dimensionless equivalent of the capitalised variables. 
+Whereas \(L\) represents the characteristic length of the system (for example, the system's or diatom's size),
+\(\frac{L^2}{D}\) is the time unit of the system, meaning the time it takes for a nutrient to diffuse through \(L\). 
+Replacing these (\ref{eq:change_of_vars}) into the equation (\ref{eq:Diff_physical}),
+we obtain the new equation (\ref{eq:Diff_non-dim}) which is ideal for numerical simulations.
+
+\begin{equation}
+    \frac{\partial n (\vec{r}, t)}{\partial t} =
+    \nabla^2_{\vec{r}} \, n (\vec{r}, t)
+    - \alpha \, n(\vec{r}, t) \, c(\vec{r}, t)
+\label{eq:Diff_non-dim}
+\end{equation}

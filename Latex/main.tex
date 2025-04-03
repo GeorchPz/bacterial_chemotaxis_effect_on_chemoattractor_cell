@@ -1,0 +1,45 @@
+\documentclass[11pt, a4paper]{article}
+
+\input{packages}
+
+\addbibresource{references.bib}
+
+\begin{document}
+
+    % \input{Sections/00.Titlepage.tex}
+
+    \hypersetup{linkcolor= black}
+    \tableofcontents
+    \newpage
+
+    % Set Line Spacing to 1.5
+    \onehalfspacing
+
+    \section{Introduction}
+    \input{Sections/01.Intro.tex}
+
+    \newpage
+
+    \section{Literature Review}
+    \input{Sections/02.Background.tex}
+
+    \section{Methodology}
+    \input{Sections/03.Method.tex}
+
+    \newpage
+    
+    \section{Results}
+    \input{Sections/04.Results.tex}
+    
+    \section{Conclusion}
+    \input{Sections/05.Conclusion.tex}
+
+    \appendix
+    \section{Coding Appendix}
+    \input{Sections/A.Coding.tex}
+    
+    \section{Mathematical Derivations}
+    \input{Sections/B.Math.tex}
+    
+    % \printbibliography
+\end{document}

@@ -1,0 +1,9 @@
+# VSCode settings directory
+.vscode/
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Python cache directories
+__pycache__/
+
+# Figures directory
+Figures/

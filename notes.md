@@ -14,12 +14,12 @@ Classify them
 Compare Graphs
 
 
-## Diff w/ Consump
+## Diff w/ Consumption
 
 #### 1. Solver1D
 Generalise Analytical solution for different Bacterial Concentrations?
 
 #### 2. Plotter
-Is there a more pythonic way of writting the code?
+Is there a more pythonic way of writing the code?
 - change x=0 to r=R
 - add Analytical Flux

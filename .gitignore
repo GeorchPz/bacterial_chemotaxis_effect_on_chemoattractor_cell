@@ -7,3 +7,7 @@ __pycache__/
 
 # Figures directory
 Figures/
+
+# Text files
+Review_folders.txt
+Review_notebooks.txt

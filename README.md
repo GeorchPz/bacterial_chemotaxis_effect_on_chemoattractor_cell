@@ -4,8 +4,8 @@ This project contains the code developed for my Bachelor Thesis (Trabajo de Fin 
 
 $$
     \frac{\partial n (\vec{r}, t)}{\partial t} =
-    \nabla^2 \, n (\vec{r}, t)
-    - \alpha \, n(\vec{r}, t) \, c(\vec{r}, t)
+    \nabla^2 n (\vec{r}, t)
+    - \alpha n(\vec{r}, t) c(\vec{r}, t)
 $$
 
 Where:

@@ -7,9 +7,5 @@
 # Python cache directories
 __pycache__/
 
-# LaTeX directory
-Latex/
-
-# Text files
-Review_folders.txt
-Review_notebooks.txt
+# Drafts & Scketches Folder
+_/

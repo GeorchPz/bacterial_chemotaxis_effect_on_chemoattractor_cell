@@ -5,8 +5,11 @@
 # Python cache directories
 __pycache__/
 
-# Figures directory
+# LaTeX directory
+Images/
 Figures/
+main.pdf
+*.tex
 
 # Text files
 Review_folders.txt

@@ -1,5 +1,7 @@
 # VSCode settings directory
 .vscode/
+# GitHub Codespaces settings directory
+.git/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 # Python cache directories

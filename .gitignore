@@ -6,10 +6,7 @@
 __pycache__/
 
 # LaTeX directory
-Images/
-Figures/
-main.pdf
-*.tex
+Latex/
 
 # Text files
 Review_folders.txt

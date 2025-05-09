@@ -17,13 +17,19 @@ class DiffusionPlotter(BasePlotter):
 
         self.configure_rc_params()
 
-    def concentrations(self, ax):
+    def concentrations(self, ax=None):
         '''Plot the nutrient concentration n(x, t) and the bacterial concentration c(x).'''
         solver = self.parent # Parent's alias
         
+        if ax is None:
+            self.fig, ax = plt.subplots(figsize=(6, 6))
+        
         if hasattr(solver.pde, 'n'):
-            colours = viridis(np.linspace(0, 1, solver.nt // 10))
-            for idx, i in enumerate(range(0, solver.nt, solver.nt // 10 + 1)):
+            # Always use exactly 10 time points
+            time_indices = np.linspace(0, solver.nt-1, 10, dtype=int)
+            # Use a wider color range or a different colormap for better distinction
+            colours = viridis(np.linspace(0, 1, 10))
+            for idx, i in enumerate(time_indices):
                 ax.plot(
                 solver.x, solver.pde.n[i],
                 label=f'n({self.x_str}, t={solver.t[i]:.2f})', color=colours[idx]
@@ -51,10 +57,13 @@ class DiffusionPlotter(BasePlotter):
         lines2, labels2 = ax_b.get_legend_handles_labels()
         ax.legend(lines + [lines2[0]], labels + [labels2[0]], loc='best')
 
-    def nutrient_flux(self, ax):
+    def nutrient_flux(self, ax=None):
         '''Plot the absolute nutrient flux |Φ(x, t)| for dynamic-state and steady-state.'''
         solver = self.parent # Parent's alias
 
+        if ax is None:
+            self.fig, ax = plt.subplots(figsize=(6, 6))
+        
         if hasattr(solver.pde, 'abs_flux'):
             colours = viridis(np.linspace(0, 1, solver.nt // 10))
             for idx, i in enumerate(range(0, solver.nt, solver.nt // 10 + 1)):
@@ -76,9 +85,12 @@ class DiffusionPlotter(BasePlotter):
 
         self._set_plot_annotations(ax, self.x_str, 'Absolute Flux $|\\Phi'+f'({self.x_str})|$', 'Absolute Nutrient Flux')
 
-    def diatom_flux(self, ax):
+    def diatom_flux(self, ax=None):
         '''Plot the absolute flux received by the diatom at x=0 |Φ(x=0, t)|.'''
         solver = self.parent # Parent's alias
+
+        if ax is None:
+            self.fig, ax = plt.subplots(figsize=(6, 6))
 
         ax.plot(solver.t, solver.pde.abs_flux_at_x0, 'b-', label=f'$|\\Phi({self.x_str}=0, t)|$')
         
@@ -93,7 +105,7 @@ class DiffusionPlotter(BasePlotter):
 
     def double_plot(self):
         'Plot the nutrient concentration, and the nutrient flux'
-        self.fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+        self.fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(2*6+1, 6))
         self._adjust_figure()
         
         self.concentrations(ax1)
@@ -101,7 +113,7 @@ class DiffusionPlotter(BasePlotter):
     
     def triple_plot(self):
         'Plot the nutrient concentration, the nutrient flux, and the flux at x=0'
-        self.fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 6))
+        self.fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(3*6+2, 6))
         self._adjust_figure()
 
         self.concentrations(ax1)

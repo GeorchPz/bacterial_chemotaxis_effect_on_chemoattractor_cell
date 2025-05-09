@@ -43,12 +43,12 @@ class Solver1D:
             self.t = np.linspace(0, self.T, self.nt)
             self.n0 = n0_func(self.x)
 
-    def __stability_condition(self):
+    def _stability_condition(self):
         """Calculate the stability condition for the PDE, Runge-Kutta 5(4)."""
         # Eigenvalue from discretisation
-        R = 1.6 # Stability factor for RK5(4)
-        lambd = - 2 / self.dx**2 - self.alpha * np.max(self.c)
-        dt = R / abs(lambd)
+        C = 1.6 # Stability factor for RK5(4)
+        lambd = 4 / self.dx**2 + self.alpha * np.max(self.c)
+        dt = C / lambd
         nt = int(self.T / dt + 1)
         return nt
 
@@ -127,6 +127,7 @@ class Solver1D:
             """Right-hand side of the PDE using finite difference method."""
             syst = self.parent # Parent's alias
             dn_dt = np.zeros_like(n)
+            
             # Boundary conditions
             dn_dt[0] = dn_dt[-1] = 0
             
@@ -139,7 +140,7 @@ class Solver1D:
         def __solve_pde(self):
             """Solve the PDE using Runge-Kutta method of order 5(4)."""
             solution = solve_ivp(
-                self.__rhs_pde, [0, self.parent.T], self.parent.n0, t_eval=self.parent.t, method='RK45'
+                self.__rhs_pde, [0, self.parent.T], self.parent.n0, t_eval=self.parent.t, method='Radau'
             )
             self.n = solution.y.T
 

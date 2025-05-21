@@ -35,8 +35,10 @@ class BasePlotter:
         plt.tight_layout()
         plt.subplots_adjust(wspace=0.35, left=0.05, right=0.95)
 
-    def save(self, path, filename, dpi=300, **kwargs):
+    def save(self, path, filename, dpi=300, return_path=False, **kwargs):
         '''Save the figure to a file with the given path, filename, and dpi.'''
         full_path = f"{path}/{filename}.png"
         self.fig.savefig(full_path, dpi=dpi, bbox_inches='tight', **kwargs)
-        return full_path
+        
+        if return_path:
+            return full_path

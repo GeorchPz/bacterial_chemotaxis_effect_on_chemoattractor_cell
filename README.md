@@ -1,6 +1,6 @@
 # Diffusion-Consumption Simulation Framework (TFG)
 
-This project contains the code developed for my Bachelor Thesis (Trabajo de Fin de Grado - TFG) focused on simulating and analysing diffusion-consumption problems (governed by the PDE bellow). The primary application involves modelling nutrient flux towards a central entity (e.g., a diatom) influenced by surrounding consuming entities (e.g., bacteria) under various spatial configurations.
+This project contains the code developed for my Bachelor Thesis (Trabajo de Fin de Grado - TFG) focused on simulating and analysing absorption-diffusion dynamics (governed by the PDE bellow). The primary application involves modelling nutrient flux towards a central entity (e.g., a diatom) influenced by surrounding consuming entities (e.g., bacteria) under various spatial configurations.
 
 $$
     \frac{\partial n (\vec{r}, t)}{\partial t} =
@@ -16,7 +16,7 @@ Where:
 
 ## Project Structure
 
-### [`base/`](base)
+### `base`
 
 This folder provides the foundational components and shared utilities for the simulation framework.
 
@@ -25,7 +25,7 @@ This folder provides the foundational components and shared utilities for the si
 *   **[`diffusion_plotter.py`](base\diffusion_plotter.py):** Defines the [`DiffusionPlotter`](base\diffusion_plotter.py#L7) class, inheriting from [`BasePlotter`](base\base_plotter.py#L3). This class is tailored for plotting specific outputs from individual simulations, such as nutrient concentration profiles ([`concentrations`](base\diffusion_plotter.py#L19)), the spatial distribution of nutrient flux ([`nutrient_flux`](base\diffusion_plotter.py#L41)), and the time evolution or steady-state value of the flux at the central entity's boundary ([`diatom_flux`](base\diffusion_plotter.py#L66)). It also includes helper methods for combined plots ([`double_plot`](base\diffusion_plotter.py#L93), [`triple_plot`](base\diffusion_plotter.py#L100)).
 *   **[`__init__.py`](base\__init__.py):** Makes the key classes from this module easily importable and also imports `numpy` and `matplotlib.pyplot` for convenience.
 
-### [`oneD/`](oneD)
+### One Dimention (`oneD`)
 
 This folder contains the implementations specific to one-dimensional diffusion-consumption problems.
 
@@ -34,7 +34,7 @@ This folder contains the implementations specific to one-dimensional diffusion-c
 *   **[`fluxmap1D.py`](oneD\fluxmap1D.py):** Defines the [`FluxMap1D`](oneD\fluxmap1D.py#L4) class, inheriting from [`BaseFluxMap`](base\base_fluxmap.py#L10). It provides the concrete implementation for generating flux maps in 1D, specifying [`Solver1D`](oneD\solver1D.py#L5) as the solver class and defining the relevant parameters (e.g., starting point `x0`, layer length `l`) and plot labels.
 *   **[`__init__.py`](oneD\__init__.py):** Makes the solver and flux map classes from this module easily importable.
 
-### [`threeD/`](threeD)
+### Three Dimention (`threeD`)
 
 This folder contains the implementations specific to three-dimensional diffusion-consumption problems, assuming spherical symmetry.
 

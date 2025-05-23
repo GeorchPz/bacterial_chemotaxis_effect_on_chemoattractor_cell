@@ -16,14 +16,15 @@ class DiffusionPlotter(BasePlotter):
             self.parent.x = self.parent.r
             # Analytical independent variable
             R_ext = self.parent.R_dtm/100
-            nr_analyt = self.parent.nr//100
+            nx_analyt = self.parent.nr//100
             self.parent.x_analyt = np.linspace(
-                self.parent.r[0], R_ext, nr_analyt
+                self.parent.r[0], R_ext, nx_analyt
             )
         else: # 1D
+            nx_analyt = self.parent.nx//100
             # Analytical independent variable
             self.parent.x_analyt = np.linspace(
-                self.parent.x[0], self.parent.x[-1], self.parent.nr/10
+                self.parent.x[0], self.parent.x[-1], nx_analyt
             )
 
         self.configure_rc_params()
@@ -42,7 +43,7 @@ class DiffusionPlotter(BasePlotter):
             colours = viridis(np.linspace(0, 1, 10))
             for idx, i in enumerate(time_indices):
                 ax.plot(
-                solver.x_analyt, solver.pde.n[i],
+                solver.x, solver.pde.n[i],
                 label=f'n({self.x_str}, t={solver.t[i]:.2f})', color=colours[idx]
                 )
         
@@ -51,7 +52,10 @@ class DiffusionPlotter(BasePlotter):
         
         if hasattr(solver.ode, 'analyt'):
             if hasattr(solver.ode.analyt, 'n'):
-                ax.plot(solver.x, solver.ode.analyt.n, 'm:', label='$n_{Analytical}'+f'({self.x_str})$')
+                ax.plot(
+                    solver.x_analyt, solver.ode.analyt.n_func(solver.x_analyt),
+                    'm:', label='$n_{Analytical}'+f'({self.x_str})$'
+                )
         
         self._set_plot_annotations(
             ax, self.x_str, f'Nutrient Concentration n({self.x_str},t)',
@@ -79,7 +83,7 @@ class DiffusionPlotter(BasePlotter):
             colours = viridis(np.linspace(0, 1, solver.nt // 10))
             for idx, i in enumerate(range(0, solver.nt, solver.nt // 10 + 1)):
                 ax.plot(
-                    solver.x_analyt, solver.pde.abs_flux[i],
+                    solver.x, solver.pde.abs_flux[i],
                     label=f'$|\\Phi({self.x_str}, t={solver.t[i]:.2f})|$', color=colours[idx]
                 )
         
@@ -92,7 +96,7 @@ class DiffusionPlotter(BasePlotter):
         
         if hasattr(solver.ode, 'analyt'):
             if hasattr(solver.ode.analyt, 'abs_flux'):
-                ax.plot(solver.x, solver.ode.analyt.abs_flux, 'm:', label='$|\\Phi_{Analytical}'+f'({self.x_str})|$')
+                ax.plot(solver.x_analyt, solver.ode.analyt.abs_flux, 'm:', label='$|\\Phi_{Analytical}'+f'({self.x_str})|$')
                 
         self._set_plot_annotations(ax, self.x_str, 'Absolute Flux $|\\Phi'+f'({self.x_str})|$', 'Absolute Nutrient Flux')
 

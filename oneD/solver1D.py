@@ -14,23 +14,40 @@ class Solver1D:
             n0_func (callable, optional): Initial condition for the Nutrients Concentration.
         """
         # System Constants
-        self.L  = params['L']       # Domain Length
-        self.Tc = params['Tc']      # Consumption Time
-        self.alpha = 1.0 / self.Tc  # Consumption Rate
+        self.D = 1                      # Diffusion Coefficient (hardcoded because of non-dimensionalisation)
+        self.L  = params['L']           # Domain Length
+        self.__set_parameters(params)   # Set the alpha parameter and calculate related timescales
+
         # Discretisation Constant
         self.nx = params['nx']
-
+        # PDE related constants
         if n0_func is not None:
-            # PDE related constants
             self.T  = params['T']
             self.nt = params['nt']
         
         self.__discretise_system(n0_func, c_func)
         
+        # Implementation of ODE, PDE solvers and plotter
         self.ode = self.ODESolver(self)
         if n0_func is not None:
             self.pde = self.PDESolver(self)
         self.plot = DiffusionPlotter(self)
+    
+    def __set_parameters(self, params):
+        """Set the alpha parameter and calculate related timescales."""
+        self.Td = self.L**2 / (2*self.D)    # Diffusion Timescale
+        
+        if 'alpha' in params:
+            self.alpha = params['alpha']     # Consumption rate
+            self.Tc = self.L / self.alpha    # Absorption Timescale (or consumption)
+            self.T_ratio = self.Tc / self.Td   # Indirect ratio
+        elif 'T_ratio' in params:
+            self.T_ratio = params['T_ratio']   # Timescales Ratio (Tc/Td)
+            self.Tc = self.T_ratio * self.Td
+            self.alpha = self.L / self.Tc    # Indirect consumption rate
+        else:
+            self.alpha = None
+            self.Tc = self.T_ratio = None
 
     def __discretise_system(self, n0_func, c_func):
         """Discretise Space/Time and input distributions."""

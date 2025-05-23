@@ -37,8 +37,8 @@ class Solver1D_UniformBacterium(Solver1D):
                     )
                 # Apply the numeric values
                 self.numeric_sol = self._substitute_numeric_values(L, alpha)
-                n_func = sp.lambdify(x, self.numeric_sol.rhs, 'numpy')
-                self.n = n_func(self.parent.parent.x)
+                self.n_func = sp.lambdify(x, self.numeric_sol.rhs, 'numpy')
+                self.n = self.n_func(self.parent.parent.x)
 
             def _apply_boundary_conditions(self, x, n, L):
                 """Apply the boundary conditions."""

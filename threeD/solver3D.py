@@ -13,27 +13,43 @@ class Solver3D:
             c_func (callable): Bacterial distribution function, normalized to 1.
         """
         # System Constants
+        self.D = 1.0                    # Diffusion Coefficient (hardcoded because of non-dimensionalisation)
         self.R_dtm  = params['R_dtm']   # Diatom Radius
         self.R_inf  = params['R_inf']   # External Radius
-        self.l  = self.R_inf - self.R_dtm   # Domain Length
-        self.Tc = params['Tc']      # Consumption Time
-        self.alpha = 1.0 / self.Tc  # Consumption Rate
+        # Shell Parameters (if they exist)
+        self.rho = params.get('rho', np.nan)
+        self.lambda_ = params.get('lambda', np.nan)
+        
+        self.__set_parameters(params)   # Set the alpha parameter and calculate related timescales
+        
         # Discretisation Constant
         self.nr = params['nr']
-        # Shell Parameters (if they exist)
-        self.rho = params.get('rho', None)
-        self.lambda_ = params.get('lambda', None)
-
+        
         self.__discretise_system(c_func)
 
+        # Implementation of ODE and plotter
         self.ode = self.SolveODE(self)
         self.pde = None     # Implementation of the PDE Solver is not necessary
         self.plot = DiffusionPlotter(self, x_str='r')
     
+    def __set_parameters(self, params):
+        """Set the alpha parameter and calculate related timescales, based on the bacterial shell profile."""
+        self.Td = self.lambda_**2 / (6*self.D)
+        if 'alpha' in params:
+            self.alpha = params['alpha']
+            self.Tc = 4*np.pi/(3*self.alpha) * ( (self.lambda_**3 + self.rho**3) - self.rho**3 )
+            self.T_ratio = self.Tc / self.Td
+        elif 'T_ratio' in params:
+            self.T_ratio = params['T_ratio']
+            self.Tc = self.T_ratio * self.Td
+            self.alpha = 4*np.pi/(3*self.Tc) * ( (self.lambda_**3 + self.rho**3) - self.rho**3 )
+        else:
+            self.alpha = self.Tc = self.T_ratio = np.nan
+
     def __discretise_system(self, c_func):
         """Discretise Space and input distributions."""
         # Space Discretisation
-        self.dr = self.l / (self.nr - 1)
+        self.dr = (self.R_inf - self.R_dtm) / (self.nr - 1)
         self.r = np.linspace(self.R_dtm, self.R_inf, self.nr)
         
         # Bacterial Distribution
@@ -112,7 +128,6 @@ class Solver3D:
             self.flux = - np.gradient(self.n, self.parent.dr)
             self.abs_flux = np.abs(self.flux)
         
-
         class SolveAnalytically:
             def __init__(self, parent):
                 self.parent = parent

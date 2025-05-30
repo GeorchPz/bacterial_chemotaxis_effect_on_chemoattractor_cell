@@ -16,6 +16,7 @@ class Solver3D:
         self.D = 1.0                    # Diffusion Coefficient (hardcoded because of non-dimensionalisation)
         self.R_dtm  = params['R_dtm']   # Diatom Radius
         self.R_inf  = params['R_inf']   # External Radius
+        self.L = params['L']            # Length of the Bacterial Region
         # Shell Parameters (if they exist)
         self.rho = params.get('rho', np.nan)
         self.lambda_ = params.get('lambda', np.nan)
@@ -34,15 +35,15 @@ class Solver3D:
     
     def __set_parameters(self, params):
         """Set the alpha parameter and calculate related timescales, based on the bacterial shell profile."""
-        self.Td = self.lambda_**2 / (6*self.D)
+        self.Td = self.L**2 / (6*self.D)
         if 'alpha' in params:
             self.alpha = params['alpha']
-            self.Tc = 4*np.pi/(3*self.alpha) * ( (self.lambda_**3 + self.rho**3) - self.rho**3 )
+            self.Tc = 4*np.pi/(3*self.alpha) * ( self.L**3 )
             self.T_ratio = self.Tc / self.Td
         elif 'T_ratio' in params:
             self.T_ratio = params['T_ratio']
             self.Tc = self.T_ratio * self.Td
-            self.alpha = 4*np.pi/(3*self.Tc) * ( (self.lambda_**3 + self.rho**3) - self.rho**3 )
+            self.alpha = 4*np.pi/(3*self.Tc) * ( self.L**3 )
         else:
             self.alpha = self.Tc = self.T_ratio = np.nan
 
@@ -158,17 +159,17 @@ class Solver3D:
                 cosh_term = np.cosh(k * syst.lambda_)
                 
                 # Compute constants
-                ### Inner region (r < R_dtm)
+                ### Inner region (r < r0)
                 denom_A = k * (syst.rho - syst.R_dtm) * sinh_term + cosh_term
                 A = - syst.R_dtm / denom_A
-                ### Shell region (R_dtm <= r < r0)
+                ### Shell region (r0 <= r < r0 + lambda)
                 B = (
                         A * (k * (syst.R_dtm - syst.rho) - 1) / (2 * k * syst.R_dtm)
                     ) * np.exp(-k * syst.rho)
                 C = (
                         A * (k * (syst.R_dtm - syst.rho) + 1) / (2 * k * syst.R_dtm)
                     ) * np.exp( k * syst.rho)
-                ### Outer region (r > r0)
+                ### Outer region (r > r0 + lambda)
                 numer_D = A * (k * (syst.R_dtm - syst.rho) * np.cosh(k * syst.lambda_) - np.sinh(k * syst.lambda_))
                 D = numer_D / (k * syst.R_dtm) - (syst.rho + syst.lambda_)
                 

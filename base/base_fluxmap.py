@@ -3,8 +3,7 @@ from sys import stdout                  # For printing progress bar
 from tqdm import tqdm                   # For displaying progress bar
 from joblib import Parallel, delayed    # For parallel processing
 
-from . import plt
-from . import np
+from . import plt, np, h5py
 from .base_plotter import BasePlotter
 
 
@@ -17,8 +16,10 @@ class BaseFluxMap(ABC, BasePlotter):
         self._init_values()
         self._plot_annotations()
 
-        self.flux_map  = np.zeros((self.n_x, self.n_y))
+        self.flux_map = np.full((self.n_x, self.n_y), np.nan)
         self.configure_rc_params()
+
+        self.data_storage_file = 'fluxmaps.h5'
 
     @abstractmethod
     def _init_values(self):
@@ -124,25 +125,25 @@ class BaseFluxMap(ABC, BasePlotter):
             self.c_gen = lambda y: self.c_generator(self.w, y)
 
         combinations = [
-            (k, t, z, T)
-            for k, z in enumerate(z_values)
-            for t, T in enumerate(self.Tc_values)
+            (iter_z, iter_t, z, t)
+            for iter_z, z in enumerate(z_values)
+            for iter_t, t in enumerate(self.alpha_values)
         ]
 
-        def flux_element(k, t, z, Tc):
+        def flux_element(iter_z, iter_t, z, alpha):
             '''Solves the diffusion system for a single combination of y and T0 values.'''
             c_func = self.c_gen(z)
-            self.params['Tc'] = Tc
+            self.params['alpha'] = alpha
             diffusion_system = self._solver_class(self.params, c_func)
             diffusion_system.ode.solve()
 
-            return k, t, diffusion_system.ode.abs_flux[0]
+            return iter_z, iter_t, diffusion_system.ode.abs_flux[0]
 
         results = self.__parallel_solve(flux_element, combinations, n_jobs)
 
         if self.iterate_thick:
             # Permute the results to match the flux axis
-            results = [(t, k, phi) for k, t, phi in results]
+            results = [(iter_t, iter_z, phi) for iter_z, iter_t, phi in results]
 
         # Reconstruction of the flux map
         for i, j, phi in results:
@@ -150,36 +151,47 @@ class BaseFluxMap(ABC, BasePlotter):
 
     def solve(self, n_jobs=None):
         '''Solver method that calls the appropriate solver method based on the number of independent variables.'''
-        if type(self.Tc) == tuple:
+        if type(self.alpha) == tuple:
             self.solve_multiple_absorptions(n_jobs)
         else:
             self.solve_single_absorption(n_jobs)
 
-    def search_minimum(self, set_ax = True):
+    def search_minimum(self, in_ax = False):
         flux_m = np.nanmin(self.flux_map)
         coords_m = np.unravel_index(np.nanargmin(self.flux_map), self.flux_map.shape)
         x_m = self.x_values[coords_m[0]]
         y_m  = self.y_values[coords_m[1]]
-        if set_ax:
+        if in_ax:
             self.ax.plot(x_m, y_m, 'ro', label='$|\\phi|_{min}='+f'{flux_m:.3f}$')
             self.ax.legend()
         else:
             print(f"Minimum flux: Phi({x_m:.3f}, {y_m:.3f})={flux_m:.3f}")
             return flux_m, x_m, y_m
+    
+    def search_maximum(self, in_ax = False):
+        flux_m = np.nanmax(self.flux_map)
+        coords_m = np.unravel_index(np.nanargmax(self.flux_map), self.flux_map.shape)
+        x_m = self.x_values[coords_m[0]]
+        y_m  = self.y_values[coords_m[1]]
+        if in_ax:
+            self.ax.plot(x_m, y_m, 'go', label='$|\\phi|_{max}='+f'{flux_m:.3f}$')
+            self.ax.legend()
+        else:
+            print(f"Maximum flux: Phi({x_m:.3f}, {y_m:.3f})={flux_m:.3f}")
+            return flux_m, x_m, y_m
         
     def plot(
-            self, ax=None, set_nans=False, set_min= False,
-            set_xlog=False, set_ylog=False, set_title=True
+            self, ax=None, flux_range=(0, 1), set_min= False, set_max=False,
+            set_xlog=False, set_ylog=False, set_title=False
         ):
         if ax is None:
-            self.fig, self.ax = plt.subplots(figsize=(10, 8))
+            self.fig, self.ax = plt.subplots(figsize=(6, 5))
         else:
             self.ax = ax
+        
+        self.search_minimum(set_min) # set min in ax
+        self.search_maximum(set_max) # set max in ax
 
-        if set_nans:
-            self.flux_map[self.flux_map == 0] = np.nan
-        if set_min:
-            self.search_minimum()
         if set_xlog:
             self.ax.set_xscale('log')
         if set_ylog:
@@ -189,9 +201,44 @@ class BaseFluxMap(ABC, BasePlotter):
             self.x_values, self.y_values,
             self.flux_map.T, 20, cmap='viridis'
         )
-        cbar = plt.colorbar(contour, ax=self.ax, label='$|\\Phi(r=R_{Diatom})|$')
+        # Set min and max values for the colormap
+        vmin, vmax = flux_range if flux_range else (None, None)
+        contour = self.ax.contourf(
+            self.x_values, self.y_values,
+            self.flux_map.T, 20, cmap='viridis',
+            vmin=vmin, vmax=vmax
+        )
+        cbar = plt.colorbar(contour, ax=self.ax, label='$|\\Phi(r=R_D)|$')
         self.ax.set(xlabel=self.xlabel, ylabel=self.ylabel)
         self.ax.grid()
 
         if set_title:
             self.ax.set_title(self.title)
+
+    def save_data(self, group_name, **kwargs):
+        '''Save the data to a file with the given path and filename.'''
+        with h5py.File(self.data_storage_file, mode='w') as f:
+            # Create a group for the audio file
+            gr = f.create_group(group_name)
+
+            # Save flux map data
+            gr.create_dataset('xlabel', data=self.xlabel)
+            gr.create_dataset('ylabel', data=self.ylabel)
+            gr.create_dataset('xvalues', data=self.x_values)
+            gr.create_dataset('yvalues', data=self.y_values)
+            gr.create_dataset('flux_map', data=self.flux_map)
+    
+    def load_data(self, group_name):
+        '''Load the data from a file with the given path and filename.'''
+        with h5py.File(self.data_storage_file, mode='r') as f:
+            gr = f[group_name]
+
+            # Load ODE parameters
+            self.params = {}
+            for key in gr.keys():
+                if key.startswith('parameter_'):
+                    param_name = key[len('parameter_'):]
+                    self.params[param_name] = gr[key][()]
+
+            # Load flux map data
+            self.flux_map = gr['flux_map'][()]

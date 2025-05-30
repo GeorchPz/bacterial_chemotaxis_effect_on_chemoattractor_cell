@@ -67,28 +67,3 @@ class Solver1D_UniformBacterium(Solver1D):
                 sp.pprint(self.particular_sol)
                 print('Numeric solution:')
                 sp.pprint(self.numeric_sol)
-
-def main():
-    syst_params = {
-        'L': 1.0, 'T': 1.0,     # Length & Time Domain
-        'Tc': 1.0,              # Consumption time
-        'nx': 50, 'nt': 100     # Number of Spatial/Temporal points
-    }
-    
-    def n0_linear(x):
-        """Initial condition: n(x, t=0) = x/L."""
-        return x / syst_params['L']
-    
-    diffusion_system = Solver1D_UniformBacterium(syst_params, n0_linear)
-    
-    diffusion_system.pde.solve()
-    diffusion_system.ode.solve()
-    diffusion_system.ode.analyt.solve()
-    
-    diffusion_system.ode.analyt.print_solutions()
-
-    DiffusionPlotter(diffusion_system).triple_plot()
-    plt.show()
-
-if __name__ == '__main__':
-    main()

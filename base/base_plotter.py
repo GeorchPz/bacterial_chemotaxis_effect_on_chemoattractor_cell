@@ -5,7 +5,7 @@ class BasePlotter:
         self.fig = None
 
     @staticmethod
-    def configure_rc_params(titlesize=14, outersize=12, innersize=9):
+    def configure_rc_params(titlesize=16, outersize=14, innersize=12):
         '''Configure the figure parameters applying a predefined style.'''
         plt.rcParams.update({
             'font.family': 'Arial',

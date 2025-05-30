@@ -18,27 +18,27 @@ class MultiDiffusionPlotter(BasePlotter):
         solver = self.parent # Parent's alias
 
         if ax is None:
-            self.fig, ax = plt.subplots(figsize=(6, 6))
+            self.fig, ax = plt.subplots(figsize=(5, 5))
         
         colours = GnBu(np.linspace(0.3, 0.7, len(n_list)))
 
         for i, n in enumerate(n_list):
             ax.plot(
                 solver.r, n, color=colours[i],
-                label='$c_{'+labels[i]+'}(r)$'
+                label=labels[i]
                 )
 
         ax.set_xlabel('r')
-        ax.set_ylabel('Nutrient Concentration n(r)')
+        ax.set_ylabel('n(r)')
 
         ax_b = ax.twinx()
         ax_b.plot(solver.r, solver.c, 'r--', label='$c_{'+solver.c_tag+'}(r)$')
-        ax_b.set_ylabel(f'Bacteria Concentration c(r)', color='red')
+        ax_b.set_ylabel(f'c(r)', color='red')
         ax_b.tick_params(axis='y', labelcolor='red')
 
+        # title = 'Nutrient Diffusion Given a Bacterial Distribution'
         self._set_plot_annotations(
-            ax, self.r_str, f'Nutrient Concentration n({self.r_str},t)',
-            'Nutrient Diffusion Given a Bacterial Distribution')
+            ax, self.r_str, f'n({self.r_str},t)', None)
         
         # Add the legend for both axes
         lines1, labels1 = ax.get_legend_handles_labels()
@@ -50,7 +50,7 @@ class MultiDiffusionPlotter(BasePlotter):
         solver = self.parent # Parent's alias
 
         if ax is None:
-            self.fig, ax = plt.subplots(figsize=(6, 6))
+            self.fig, ax = plt.subplots(figsize=(5, 5))
 
         colours = GnBu(np.linspace(0.3, 0.7, len(f_list)))
         colours_point = RdPu(np.linspace(0.3, 0.7, len(f_list)))
@@ -58,7 +58,7 @@ class MultiDiffusionPlotter(BasePlotter):
         for i, f in enumerate(f_list):
             ax.plot(
                 solver.r, f, color=colours[i],
-                label='$|\\Phi_{'+labels[i]+'}(r)|$'
+                label=labels[i]
                 )
 
             # Last value plot
@@ -69,13 +69,14 @@ class MultiDiffusionPlotter(BasePlotter):
                 label= diatom_flux_str
                 )
             
-            self._set_plot_annotations(ax, self.r_str, 'Absolute Flux $|\\Phi'+f'({self.r_str})|$', 'Absolute Nutrient Flux')
+            # title = 'Absolute Nutrient Flux'
+            self._set_plot_annotations(ax, self.r_str, '$|\\Phi'+f'({self.r_str})|$', None)
 
     def double_plot(
             self, n_list, f_list, labels,
             xlim=None
             ):
-        self.fig, self.axes = plt.subplots(1, 2, figsize=(12 + 1, 6))
+        self.fig, self.axes = plt.subplots(1, 2, figsize=(2*5 + 1, 5))
         self._adjust_figure()
 
         self.concentrations(n_list, labels, self.axes[0])

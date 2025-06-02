@@ -155,33 +155,49 @@ class BaseFluxMap(ABC, BasePlotter):
             self.solve_multiple_absorptions(n_jobs)
         else:
             self.solve_single_absorption(n_jobs)
-
-    def search_minimum(self, in_ax = False):
-        flux_m = np.nanmin(self.flux_map)
-        coords_m = np.unravel_index(np.nanargmin(self.flux_map), self.flux_map.shape)
-        x_m = self.x_values[coords_m[0]]
-        y_m  = self.y_values[coords_m[1]]
-        if in_ax:
-            self.ax.plot(x_m, y_m, 'ro', label='$|\\phi|_{min}='+f'{flux_m:.3f}$')
-            self.ax.legend()
-        else:
-            print(f"Minimum flux: Phi({x_m:.3f}, {y_m:.3f})={flux_m:.3f}")
-            return flux_m, x_m, y_m
     
-    def search_maximum(self, in_ax = False):
-        flux_m = np.nanmax(self.flux_map)
-        coords_m = np.unravel_index(np.nanargmax(self.flux_map), self.flux_map.shape)
-        x_m = self.x_values[coords_m[0]]
-        y_m  = self.y_values[coords_m[1]]
-        if in_ax:
-            self.ax.plot(x_m, y_m, 'go', label='$|\\phi|_{max}='+f'{flux_m:.3f}$')
-            self.ax.legend()
-        else:
-            print(f"Maximum flux: Phi({x_m:.3f}, {y_m:.3f})={flux_m:.3f}")
-            return flux_m, x_m, y_m
+    def search_extremes(self, in_ax=False):
+        # Find minimum
+        min_flux = np.nanmin(self.flux_map)
+        min_coords = np.unravel_index(np.nanargmin(self.flux_map), self.flux_map.shape)
+        min_x = self.x_values[min_coords[0]]
+        min_y = self.y_values[min_coords[1]]
         
+        # Find maximum
+        max_flux = np.nanmax(self.flux_map)
+        max_coords = np.unravel_index(np.nanargmax(self.flux_map), self.flux_map.shape)
+        max_x = self.x_values[max_coords[0]]
+        max_y = self.y_values[max_coords[1]]
+        
+        if in_ax:
+            # Plot both extremes
+            self.ax.plot(
+                min_x, min_y, 'bo', markersize= 8, mfc='none',
+                label='$|\\phi|_{min}='+f'{min_flux:.3f}$'
+                )
+            self.ax.plot(
+                max_x, max_y, 'ro', markersize= 8, mfc='none',
+                label='$|\\phi|_{max}='+f'{max_flux:.3f}$'
+                )
+        else:
+            # Print both extremes
+            print(f"Minimum flux: Phi({min_x:.3f}, {min_y:.3f})={min_flux:.3f}")
+            print(f"Maximum flux: Phi({max_x:.3f}, {max_y:.3f})={max_flux:.3f}")
+            return (min_flux, min_x, min_y), (max_flux, max_x, max_y)
+    
+    def transition_boundary(self, in_ax=False):
+        # Find the positions where these minima occur
+        minr0_indices = [np.nanargmin(φi) for φi in self.flux_map.T] # ignoring NaN values
+        # Get the corresponding values for the maximum flux
+        r0_transect = [self.x_values[i] for i in minr0_indices]
+
+        if in_ax:
+            # Add the maximum flux line connecting the maxima
+            self.ax.plot(r0_transect, self.y_values, 'r--', label='$\\text{min}_{r_0} \\, |\\phi|$', linewidth=1)
+    
     def plot(
-            self, ax=None, flux_range=(0, 1), set_min= False, set_max=False,
+            self, ax=None, flux_range=(0, 1),
+            set_extremes=False, set_transition=False,
             set_xlog=False, set_ylog=False, set_title=False
         ):
         if ax is None:
@@ -189,18 +205,20 @@ class BaseFluxMap(ABC, BasePlotter):
         else:
             self.ax = ax
         
-        self.search_minimum(set_min) # set min in ax
-        self.search_maximum(set_max) # set max in ax
+        # Check if extremes needs to be plotted
+        self.search_extremes(in_ax=set_extremes)
+        # Check if transition boundary needs to be plotted
+        if set_transition:
+            self.transition_boundary(in_ax=True)
+
+        if set_extremes or set_transition:
+            self.ax.legend()
 
         if set_xlog:
             self.ax.set_xscale('log')
         if set_ylog:
             self.ax.set_yscale('log')
 
-        contour = self.ax.contourf(
-            self.x_values, self.y_values,
-            self.flux_map.T, 20, cmap='viridis'
-        )
         # Set min and max values for the colormap
         vmin, vmax = flux_range if flux_range else (None, None)
         contour = self.ax.contourf(
@@ -208,7 +226,7 @@ class BaseFluxMap(ABC, BasePlotter):
             self.flux_map.T, 20, cmap='viridis',
             vmin=vmin, vmax=vmax
         )
-        cbar = plt.colorbar(contour, ax=self.ax, label='$|\\Phi(r=R_D)|$')
+        cbar = plt.colorbar(contour, ax=self.ax, label=self.cbar_label)
         self.ax.set(xlabel=self.xlabel, ylabel=self.ylabel)
         self.ax.grid()
 
@@ -217,28 +235,24 @@ class BaseFluxMap(ABC, BasePlotter):
 
     def save_data(self, group_name, **kwargs):
         '''Save the data to a file with the given path and filename.'''
-        with h5py.File(self.data_storage_file, mode='w') as f:
-            # Create a group for the audio file
-            gr = f.create_group(group_name)
+        mode='a' # Opens the file for reading and writing, creating it if it doesn’t exist.
+        with h5py.File(self.data_storage_file, mode) as f:
+            if group_name in f: # Remove the group before overwriting
+                del f[group_name]
 
+            group = f.create_group(group_name)
+            
             # Save flux map data
-            gr.create_dataset('xlabel', data=self.xlabel)
-            gr.create_dataset('ylabel', data=self.ylabel)
-            gr.create_dataset('xvalues', data=self.x_values)
-            gr.create_dataset('yvalues', data=self.y_values)
-            gr.create_dataset('flux_map', data=self.flux_map)
+            group.create_dataset('xlabel', data=self.xlabel)
+            group.create_dataset('ylabel', data=self.ylabel)
+            group.create_dataset('xvalues', data=self.x_values)
+            group.create_dataset('yvalues', data=self.y_values)
+            group.create_dataset('flux_map', data=self.flux_map)
     
     def load_data(self, group_name):
         '''Load the data from a file with the given path and filename.'''
         with h5py.File(self.data_storage_file, mode='r') as f:
-            gr = f[group_name]
-
-            # Load ODE parameters
-            self.params = {}
-            for key in gr.keys():
-                if key.startswith('parameter_'):
-                    param_name = key[len('parameter_'):]
-                    self.params[param_name] = gr[key][()]
-
+            group = f[group_name]
+            
             # Load flux map data
-            self.flux_map = gr['flux_map'][()]
+            self.flux_map = group['flux_map'][()]

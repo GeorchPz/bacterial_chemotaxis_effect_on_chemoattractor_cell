@@ -38,7 +38,7 @@ class MultiDiffusionPlotter(BasePlotter):
 
         # title = 'Nutrient Diffusion Given a Bacterial Distribution'
         self._set_plot_annotations(
-            ax, self.r_str, f'n({self.r_str},t)', None)
+            ax, self.r_str, f'n({self.r_str})', None)
         
         # Add the legend for both axes
         lines1, labels1 = ax.get_legend_handles_labels()

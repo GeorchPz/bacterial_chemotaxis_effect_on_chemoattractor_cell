@@ -29,6 +29,7 @@ class FluxMap1D(BaseFluxMap):
     def _plot_annotations(self):
         self.xlabel = 'Starting Point ($x_0$)'
         self.ylabel = 'Step Length ($l$)'
+        self.cbar_label = '$\\Phi_D(x_0,l)$'
         self.title  = (
             'Diatom Flux under Varying Bacterial Step Distributions'
             + f'\n$\\tau_c/\\tau_d={self.T_ratio}$'

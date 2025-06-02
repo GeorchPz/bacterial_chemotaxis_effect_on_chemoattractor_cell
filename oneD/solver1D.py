@@ -108,11 +108,11 @@ class Solver1D:
             Optimised version of the method using numpy.linalg.solve.
             '''
             syst = self.parent
-            ab = np.zeros((3, syst.nx))  # 'ab' will hold [superdiag, diag, subdiag]
+            A = np.zeros((3, syst.nx))  # A: holds [superdiag, diag, subdiag]
             b = np.zeros(syst.nx)
 
             # Boundary conditions
-            ab[1, 0] = ab[1, -1] = 1.0
+            A[1, 0] = A[1, -1] = 1.0
             b[0]  = 0.0     # n(x=0) = 0
             b[-1] = 1.0     # n(x=L) = 1
 
@@ -120,11 +120,11 @@ class Solver1D:
 
             i_idx = np.arange(1, syst.nx - 1)
             # Fill the diagonals
-            ab[1, i_idx] = -2.0 * _dx2 - syst.alpha * syst.c[i_idx]
-            ab[2, i_idx - 1] = ab[0, i_idx + 1] = _dx2
+            A[1, i_idx] = -2.0 * _dx2 - syst.alpha * syst.c[i_idx]
+            A[2, i_idx - 1] = A[0, i_idx + 1] = _dx2
 
             # Solve A·n = b
-            self.n = solve_banded((1, 1), ab, b) # (1,1: 1 superdiagonal, 1 subdiagonal)
+            self.n = solve_banded((1, 1), A, b) # (1,1: 1 superdiagonal, 1 subdiagonal)
 
         def __calculate_flux(self):
             """Calculate the steady-state flux."""

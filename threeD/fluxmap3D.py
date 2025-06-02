@@ -32,8 +32,10 @@ class FluxMap3D(BaseFluxMap):
         self.iterate_radii = 'n_rho' in self.params
 
         if self.n_x:
+            # rho values
             self.x_values = np.linspace(self.R_dtm, self.L, self.n_x)
         if self.n_y:
+            # lambda values
             self.y_values = np.linspace(0, self.L - self.R_dtm, self.n_y + 1)[1:]
 
         if self.n_alpha:
@@ -53,6 +55,7 @@ class FluxMap3D(BaseFluxMap):
     def _plot_annotations(self):
         self.xlabel = 'Inner Radius ($\\rho$)'
         self.ylabel = 'Thickness ($\\lambda$)'
+        self.cbar_label = '$\\Phi_D(\\rho, \\lambda)$'
         self.title = (
             'Diatom Flux under Bacterial Spherical Shells'
             + f'\n$\\tau_c/\\tau_d={self.T_ratio}$'

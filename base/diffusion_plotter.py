@@ -55,12 +55,13 @@ class DiffusionPlotter(BasePlotter):
                 )
         
         # title = 'Nutrient Diffusion Given a Bacterial Distribution'
-        self._set_plot_annotations(ax, self.x_str, f'n({self.x_str},t)', None
+        y_label = f'n({self.x_str},t)' if self.x_str == 'x' else f'n({self.x_str})'
+        self._set_plot_annotations(ax, self.x_str, y_label, None
             )
         
         # Define the secondary y-axis for the bacteria concentration
         ax_b = ax.twinx()
-        ax_b.plot(solver.x, solver.c, 'r', label='$c_{'+solver.c_tag+'}$'+f'({self.x_str})')
+        ax_b.plot(solver.x, solver.c, 'red', label='$c_{'+solver.c_tag+'}$'+f'({self.x_str})')
         ax_b.set_ylabel(f'c({self.x_str})', color='red')
         ax_b.tick_params(axis='y', labelcolor='red')
 

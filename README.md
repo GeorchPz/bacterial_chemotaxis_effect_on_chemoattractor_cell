@@ -21,8 +21,9 @@ Where:
 This folder provides the foundational components and shared utilities for the simulation framework.
 
 *   **[`base_plotter.py`](base\base_plotter.py):** Defines the [`BasePlotter`](base\base_plotter.py#L3) class. This class offers common plotting functionalities used throughout the project, such as setting up Matplotlib styles ([`configure_rc_params`](base\base_plotter.py#L7)), adding labels and titles ([`_set_plot_annotations`](base\base_plotter.py#L22)), adjusting figure layouts ([`_adjust_figure`](base\base_plotter.py#L28)), and saving plots ([`save`](base\base_plotter.py#L32)).
-*   **[`base_fluxmap.py`](base\base_fluxmap.py):** Defines the [`BaseFluxMap`](base\base_fluxmap.py#L10) abstract base class. It establishes the interface for generating and visualizing "flux maps," which show how the nutrient flux onto the central entity varies across a parameter space (e.g., bacterial layer geometry, consumption rates). It leverages `joblib` for parallel computation ([`__parallel_solve`](base\base_fluxmap.py#L70)) to accelerate the process and includes methods for plotting the map ([`plot`](base\base_fluxmap.py#L168)) and finding flux minima ([`search_minimum`](base\base_fluxmap.py#L152)). Subclasses must implement specific details like parameter initialization ([`_init_values`](base\base_fluxmap.py#L20)) and plot annotations ([`_plot_annotations`](base\base_fluxmap.py#L33)).
+*   **[`base_fluxmap.py`](base\\base_fluxmap.py):** Defines the [`BaseFluxMap`](base\\base_fluxmap.py#L10) abstract base class. It establishes the interface for generating and visualizing "flux maps," which show how the nutrient flux onto the central entity varies across a parameter space (e.g., bacterial layer geometry, consumption rates). It leverages `joblib` for parallel computation ([`__parallel_solve`](base\\base_fluxmap.py#L70)) to accelerate the process, uses `h5py` to store and retrieve computed flux map data in an HDF5 file (`fluxmaps.h5`), and includes methods for plotting the map ([`plot`](base\\base_fluxmap.py#L168)) and finding flux minima ([`search_minimum`](base\\base_fluxmap.py#L152)). Subclasses must implement specific details like parameter initialization ([`_init_values`](base\\base_fluxmap.py#L20)) and plot annotations ([`_plot_annotations`](base\\base_fluxmap.py#L33)).
 *   **[`diffusion_plotter.py`](base\diffusion_plotter.py):** Defines the [`DiffusionPlotter`](base\diffusion_plotter.py#L7) class, inheriting from [`BasePlotter`](base\base_plotter.py#L3). This class is tailored for plotting specific outputs from individual simulations, such as nutrient concentration profiles ([`concentrations`](base\diffusion_plotter.py#L19)), the spatial distribution of nutrient flux ([`nutrient_flux`](base\diffusion_plotter.py#L41)), and the time evolution or steady-state value of the flux at the central entity's boundary ([`diatom_flux`](base\diffusion_plotter.py#L66)). It also includes helper methods for combined plots ([`double_plot`](base\diffusion_plotter.py#L93), [`triple_plot`](base\diffusion_plotter.py#L100)).
+*   **[`multiple_diffusion_plotter.py`](base\multiple_diffusion_plotter.py):** Defines the [`MultiDiffusionPlotter`](base\multiple_diffusion_plotter.py#L8) class, inheriting from [`BasePlotter`](base\base_plotter.py#L3). This class is designed for comparing results from multiple diffusion simulations. It provides methods to plot multiple nutrient concentration profiles ([`concentrations`](base\multiple_diffusion_plotter.py#L15)) and nutrient flux profiles ([`nutrient_flux`](base\multiple_diffusion_plotter.py#L43)) together, and a helper for a combined two-panel plot ([`double_plot`](base\multiple_diffusion_plotter.py#L69)).
 *   **[`__init__.py`](base\__init__.py):** Makes the key classes from this module easily importable and also imports `numpy` and `matplotlib.pyplot` for convenience.
 
 ### One Dimention (`oneD`)
@@ -38,9 +39,12 @@ This folder contains the implementations specific to one-dimensional diffusion-c
 
 This folder contains the implementations specific to three-dimensional diffusion-consumption problems, assuming spherical symmetry.
 
-*   **[`solver3D.py`](threeD\solver3D.py):** Defines the [`Solver3D`](threeD\solver3D.py#L5) class. It implements numerical methods (finite differences, optimized using `scipy.linalg.solve_banded` ([`__solve_ode_opt`](threeD\solver3D.py#L72))) to solve the steady-state (ODE) diffusion-consumption equation in spherical coordinates with spherical symmetry ([`SolveODE`](threeD\solver3D.py#L37)). It handles the spatial discretization ([`__discretise_system`](threeD\solver3D.py#L27)) and calculates the radial nutrient concentration profile (`n`) and flux (`flux`). It may also contain stubs or implementations for analytical solutions ([`SolveAnalytically`](threeD\solver3D.py#L108)).
+*   **[`solver3D.py`](threeD\solver3D.py#L5):** Defines the [`Solver3D`](threeD\solver3D.py#L5) class. It implements numerical methods (finite differences, optimized using `scipy.linalg.solve_banded` ([`__solve_ode_opt`](threeD\solver3D.py#L72))) to solve the steady-state (ODE) diffusion-consumption equation in spherical coordinates with spherical symmetry ([`SolveODE`](threeD\solver3D.py#L37)). It handles the spatial discretization ([`__discretise_system`](threeD\solver3D.py#L27)) and calculates the radial nutrient concentration profile (`n`) and flux (`flux`). It may also contain stubs or implementations for analytical solutions ([`SolveAnalytically`](threeD\solver3D.py#L108)).
 *   **[`fluxmap3D.py`](threeD\fluxmap3D.py):** Defines the [`FluxMap3D`](threeD\fluxmap3D.py#L41) class, inheriting from [`BaseFluxMap`](base\base_fluxmap.py#L10). It provides the concrete implementation for generating flux maps in 3D (spherical), specifying [`Solver3D`](threeD\solver3D.py#L5) as the solver class. It defines parameters relevant to spherical shells (e.g., inner radius `r0`, thickness `lambda`, consumption time `Tc`) and sets appropriate plot annotations ([`_plot_annotations`](threeD\fluxmap3D.py#L43)).
-*   **[`__init__.py`](threeD\__init__.py):** Makes the solver and flux map classes from this module easily importable.
+*   **[`__init__.py`](threeD\\__init__.py):** Makes the solver and flux map classes from this module easily importable.
+
+### Utility Scripts
+*   **[`remove_h5_group.py`](remove_h5_group.py):** A script to remove specific groups from the `fluxmaps.h5` HDF5 file. This can be useful for managing stored flux map data.
 
 ## Jupyter Notebooks
 
@@ -62,10 +66,11 @@ Key analyses performed in the notebooks include:
 *   SymPy (for analytical solutions)
 *   joblib (for parallel processing in flux maps)
 *   tqdm (for progress bars)
+*   h5py (for HDF5 file handling)
 
 Install dependencies using pip:
 ```bash
-pip install numpy matplotlib scipy sympy joblib tqdm
+pip install numpy matplotlib scipy sympy joblib tqdm h5py
 ```
 
 ## Usage

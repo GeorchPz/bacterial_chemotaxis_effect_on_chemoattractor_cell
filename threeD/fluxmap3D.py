@@ -10,23 +10,32 @@ class FluxMap3D(BaseFluxMap):
     def _solver_class(self):
         return Solver3D
 
-    def _init_values(self):
+    def _init_values(self, set_logscale=False):
+
+        self.set_logscale = set_logscale # Logscale for T_ratio values
         # ODE parameters
         self.R_dtm = self.params['R_dtm']
         self.L     = self.params['L']
-        self.alpha    = self.params['alpha']
-        # Compute Timescale parameters based on the alpha
-        extract_params = Solver3D(self.params, c_none)
-        self.Td      = extract_params.Td
-        self.Tc      = extract_params.Tc
-        self.T_ratio = extract_params.T_ratio
+        if 'alpha' in self.params:
+            self.alpha = self.params['alpha']
+            self.n_abs = self.params.get('n_alpha')
+            if self.n_abs is None:
+                self.T_ratio = 8*np.pi*self.L / self.alpha
+            else:
+                self.T_ratio = tuple(8*np.pi*self.L / np.array(self.alpha))
+        elif 'T_ratio' in self.params:
+            self.T_ratio = self.params['T_ratio']
+            self.n_abs = self.params.get('n_T_ratio')
+            if self.n_abs is None:
+                self.alpha = 8*np.pi*self.L / self.T_ratio
+            else:
+                self.alpha = tuple(8*np.pi*self.L / np.array(self.T_ratio))
 
         # FluxMap parameters
         self.n_x = self.params.get('n_rho')
         self.n_y = self.params.get('n_lambda')
-        self.n_alpha = self.params.get('n_alpha')
-        # params.get() returns None if the key is not found
-
+        # and self.n_abs
+    
         # Check if we are iterating over thickness or radii
         self.iterate_thick = 'n_lambda' in self.params
         self.iterate_radii = 'n_rho' in self.params
@@ -38,18 +47,18 @@ class FluxMap3D(BaseFluxMap):
             # lambda values
             self.y_values = np.linspace(0, self.L - self.R_dtm, self.n_y + 1)[1:]
 
-        if self.n_alpha:
-            self.alpha_values = (
-                np.linspace(*self.alpha, self.n_alpha) if self.set_logscale == False
-                else self.my_logspace(*self.alpha, self.n_alpha)
+        if self.n_abs:
+            self.T_ratio_values = (
+                np.linspace(*self.T_ratio, self.n_abs) if self.set_logscale == False
+                else self.my_logspace(*self.T_ratio, self.n_abs)
             )
             if self.n_y:
-                self.n_x = self.n_alpha
-                self.x_values = self.alpha_values
+                self.n_x = self.n_abs
+                self.x_values = self.T_ratio_values
                 self.w = self.params['rho']
             elif self.n_x:
-                self.n_y = self.n_alpha
-                self.y_values = self.alpha_values
+                self.n_y = self.n_abs
+                self.y_values = self.T_ratio_values
                 self.w = self.params['lambda']
 
     def _plot_annotations(self):
@@ -61,7 +70,7 @@ class FluxMap3D(BaseFluxMap):
             + f'\n$\\tau_c/\\tau_d={self.T_ratio}$'
         )
         
-        if self.n_alpha:
+        if self.n_abs:
             abs_label = 'Timescale Ratios ($\\tau_c/\\tau_d$)'
             if self.iterate_radii:
                 self.ylabel = abs_label

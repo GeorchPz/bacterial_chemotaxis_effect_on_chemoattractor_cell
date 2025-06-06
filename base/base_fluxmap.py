@@ -127,13 +127,13 @@ class BaseFluxMap(ABC, BasePlotter):
         combinations = [
             (iter_z, iter_t, z, t)
             for iter_z, z in enumerate(z_values)
-            for iter_t, t in enumerate(self.alpha_values)
+            for iter_t, t in enumerate(self.T_ratio_values)
         ]
 
-        def flux_element(iter_z, iter_t, z, alpha):
+        def flux_element(iter_z, iter_t, z, T_ratio):
             '''Solves the diffusion system for a single combination of y and T0 values.'''
             c_func = self.c_gen(z)
-            self.params['alpha'] = alpha
+            self.params['T_ratio'] = T_ratio
             diffusion_system = self._solver_class(self.params, c_func)
             diffusion_system.ode.solve()
 
@@ -151,7 +151,7 @@ class BaseFluxMap(ABC, BasePlotter):
 
     def solve(self, n_jobs=None):
         '''Solver method that calls the appropriate solver method based on the number of independent variables.'''
-        if type(self.alpha) == tuple:
+        if type(self.T_ratio) == tuple:
             self.solve_multiple_absorptions(n_jobs)
         else:
             self.solve_single_absorption(n_jobs)
@@ -189,11 +189,11 @@ class BaseFluxMap(ABC, BasePlotter):
         # Find the positions where these minima occur
         minr0_indices = [np.nanargmin(φi) for φi in self.flux_map.T] # ignoring NaN values
         # Get the corresponding values for the maximum flux
-        r0_transect = [self.x_values[i] for i in minr0_indices]
+        self.r0_transect = [self.x_values[i] for i in minr0_indices]
 
         if in_ax:
             # Add the maximum flux line connecting the maxima
-            self.ax.plot(r0_transect, self.y_values, 'r--', label='$\\text{min}_{r_0} \\, |\\phi|$', linewidth=1)
+            self.ax.plot(self.r0_transect, self.y_values, 'r--', label='$\\text{min}_{\\rho} \\, |\\phi|$', linewidth=1)
     
     def plot(
             self, ax=None, flux_range=(0, 1),

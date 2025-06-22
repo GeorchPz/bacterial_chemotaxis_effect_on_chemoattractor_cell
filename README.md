@@ -1,6 +1,6 @@
 # Diffusion-Consumption Simulation Framework (TFG)
 
-This project contains the code developed for my Bachelor Thesis (Trabajo de Fin de Grado - TFG) focused on simulating and analysing absorption-diffusion dynamics (governed by the PDE bellow). The primary application involves modelling nutrient flux towards a central entity (e.g., a diatom) influenced by surrounding consuming entities (e.g., bacteria) under various spatial configurations.
+This project contains the code developed for my Bachelor Thesis (Trabajo de Fin de Grado, TFG). It presents a Python framework for simulating the filtering of diffusing particles in microbial processes. The absorption-diffusion model is implemented in both 1D and 3D geometries. A comprehensive parameter search is used to identify optimal configurations that maximize nutrient flux toward a central entity (e.g., a diatom), influenced by surrounding consuming entities (e.g., bacteria) arranged in various spatial patterns.
 
 $$
     \frac{\partial n (\vec{r}, t)}{\partial t} =

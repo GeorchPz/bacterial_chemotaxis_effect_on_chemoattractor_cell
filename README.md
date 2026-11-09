@@ -1,7 +1,11 @@
-# Diffusion-Consumption Simulation Framework (TFG)
+# Effect of Bacterial Chemotaxis on Nutrient Uptake by the Chemoattractor Cell
 
-This project contains the code developed for my Bachelor Thesis (Trabajo de Fin de Grado, TFG). It presents a Python framework for simulating the filtering of diffusing particles in microbial processes. The absorption-diffusion model is implemented in both 1D and 3D geometries. A comprehensive parameter search is used to identify optimal configurations that maximize nutrient flux toward a central entity (e.g., a diatom), influenced by surrounding consuming entities (e.g., bacteria) arranged in various spatial patterns.
+Code for my BSc thesis in Physics (Universitat de les Illes Balears, 2025), supervised by Marco Polin (IMEDEA). A Python framework that simulates absorption–diffusion in 1D and 3D (spherical symmetry) to answer: *how does the spatial distribution of chemotactic bacteria affect the nutrient uptake by non-motile diatoms?*
 
+## Key result
+When bacteria compete with the diatom, its nutrient flux is highest when the bacteria form a concentrated layer close to its surface. The optimal configurations lie within about **one diatom-diameter** of the surface. The predictions are related to real microbial length scales.
+
+## Model
 $$
     \frac{\partial n (\vec{r}, t)}{\partial t} =
     \nabla^2 n (\vec{r}, t)
@@ -13,6 +17,18 @@ Where:
 -   $\alpha$ is the consumption rate.
 -   $c(\vec{r}, t)$ is the concentration of the consuming entities (e.g., bacteria).
 
+## How it works
+- **Model:** steady-state absorption–diffusion equation, non-dimensionalised and validated against analytical solutions.
+- **Flux maps:** instead of simulating bacterial motion, I scan a large space of bacterial distributions (steps, exponentials, spherical shells) and compute the diatom's flux for each.
+- **Performance:** a banded (tridiagonal) solver reduces each solve from O(N³) to O(N), and `joblib` runs the independent solves in parallel. Together these cut run times from about 24 h to about 1 h.
+- **Storage:** results are saved to HDF5 (`fluxmaps.h5`).
+
+## Quick start
+```bash
+pip install numpy matplotlib scipy sympy joblib tqdm h5py
+python main1D.py
+```
+The `1D-*.ipynb` and `3D-*.ipynb` notebooks reproduce each thesis figure.
 
 ## Project Structure
 
